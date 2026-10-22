@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Probe</title>
+<style>body{background:#000;color:#fff;font:20px/1.3 monospace;margin:40px}</style></head>
+<body><h1>Home probe</h1><pre id="out">collecting…</pre>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var report = { at: new Date().toISOString(), apps: null, sources: null, errors: [] };
+  function done() {
+    var lines = ['apps: ' + (report.apps ? report.apps.length : 'ERR')];
+    (report.apps || []).forEach(function (a) { if (a.show) { lines.push(a.id + '  ' + a.name); } });
+    lines.push('sources: ' + JSON.stringify(report.sources));
+    lines.push('errors: ' + JSON.stringify(report.errors));
+    var x = new XMLHttpRequest();
+    x.open('POST', 'https://tizen-home-screen.dev.phew.blue/probe');
+    x.setRequestHeader('content-type', 'application/json');
+    x.onload = function () { out.textContent = 'POST ' + x.status + '\n' + lines.join('\n'); };
+    x.onerror = function () { out.textContent = 'POST FAILED (photograph this screen)\n' + lines.join('\n'); };
+    x.send(JSON.stringify(report));
+  }
+  try {
+    tizen.application.getAppsInfo(function (apps) {
+      report.apps = apps.map(function (a) { return { id: a.id, name: a.name, show: a.show, iconPath: a.iconPath, packageId: a.packageId }; });
+      tizen.systeminfo.getPropertyValue('VIDEOSOURCE', function (s) {
+        report.sources = { connected: s.connected, disconnected: s.disconnected };
+        done();
+      }, function (e) { report.errors.push('VIDEOSOURCE: ' + e.message); done(); });
+    }, function (e) { report.errors.push('getAppsInfo: ' + e.message); done(); });
+  } catch (e) { report.errors.push(String(e)); done(); }
+})();
+</script></body></html>
