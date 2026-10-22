@@ -1,5 +1,6 @@
 import { mkdir, rm, writeFile, copyFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 
 const W = 1920;
@@ -73,7 +74,7 @@ export async function fetchWallpapers({ apiUrl, apiKey, albumId, outDir, fallbac
   return { source: 'fallback', files: ['wp-0.jpg'] };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const r = await fetchWallpapers({
     apiUrl: process.env.IMMICH_URL || 'http://immich-app.home.svc:2283',
     apiKey: process.env.IMMICH_API_KEY || '',

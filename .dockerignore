@@ -1,0 +1,8 @@
+node_modules
+build
+test
+e2e
+tools
+tizen
+.github
+test-results
