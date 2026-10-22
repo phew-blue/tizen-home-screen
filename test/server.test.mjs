@@ -36,3 +36,14 @@ test('oversized probe rejected', async () => {
   const r = await get('/probe', { method: 'POST', body: 'x'.repeat(1024 * 1024 + 1) });
   assert.equal(r.status, 413);
 });
+test('survives aborted POST /probe', async () => {
+  const net = await import('node:net');
+  const sock = net.connect(srv.address().port, '127.0.0.1');
+  await new Promise((r) => sock.once('connect', r));
+  sock.on('error', () => {});
+  sock.write('POST /probe HTTP/1.1\r\nHost: x\r\nContent-Length: 100000\r\n\r\npartial');
+  await new Promise((r) => setTimeout(r, 50));
+  sock.destroy();
+  await new Promise((r) => setTimeout(r, 100));
+  assert.equal(await (await get('/healthz')).text(), 'ok');
+});

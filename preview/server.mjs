@@ -14,10 +14,9 @@ function safeJoin(dir, rel) {
 
 export function createServer({ uiDir, previewDir, wallpaperDir }) {
   let probe = null;
-  return http.createServer(async (req, res) => {
-    const url = new URL(req.url, 'http://x');
-    let path;
-    try { path = decodeURIComponent(url.pathname); } catch { path = null; }
+  const handle = async (req, res) => {
+    let path = null;
+    try { path = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { path = null; }
     const send = (code, body, type = 'text/plain') => { res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' }); res.end(body); };
     if (path === null) return send(400, 'bad request');
     if (path === '/healthz') return send(200, 'ok');
@@ -41,6 +40,16 @@ export function createServer({ uiDir, previewDir, wallpaperDir }) {
     if (!file) return send(404, 'not found');
     try { send(200, await readFile(file), TYPES[extname(file)] || 'application/octet-stream'); }
     catch { send(404, 'not found'); }
+  };
+  return http.createServer((req, res) => {
+    // Absorb client aborts / stream errors so they never become unhandled rejections.
+    req.on('error', () => {});
+    handle(req, res).catch(() => {
+      try {
+        if (!res.headersSent) { res.writeHead(500, { 'content-type': 'text/plain' }); res.end('server error'); }
+        else res.destroy();
+      } catch { /* socket already gone */ }
+    });
   });
 }
 
