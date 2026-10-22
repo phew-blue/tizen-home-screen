@@ -13,5 +13,6 @@ USER tizen
 WORKDIR /home/tizen
 RUN curl -fsSLo cli.bin https://download.tizen.org/sdk/Installer/tizen-studio_${TIZEN_STUDIO}/web-cli_Tizen_Studio_${TIZEN_STUDIO}_ubuntu-64.bin \
     && chmod +x cli.bin && ./cli.bin --accept-license /home/tizen/tizen-studio && rm cli.bin
+RUN rm -f /home/tizen/tizen-studio/tools/.tizen-cli-config && ln -s /home/tizen/tizen-studio-data/.tizen-cli-config /home/tizen/tizen-studio/tools/.tizen-cli-config
 ENV PATH=/home/tizen/tizen-studio/tools:/home/tizen/tizen-studio/tools/ide/bin:$PATH
 CMD ["sleep", "infinity"]
