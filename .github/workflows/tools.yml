@@ -40,4 +40,5 @@ jobs:
           cache-to: type=gha,mode=max,scope=tizen-home-screen-tools
 
       - name: Print digest
-        run: echo "digest: ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+        run: |
+          echo "digest: ${{ steps.build.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"
