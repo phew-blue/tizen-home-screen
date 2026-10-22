@@ -1,0 +1,17 @@
+{
+  "name": "tizen-home-screen",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "test:e2e": "playwright test",
+    "preview": "node preview/server.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "acorn": "^8.19.0"
+  }
+}
