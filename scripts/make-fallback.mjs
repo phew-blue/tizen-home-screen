@@ -3,7 +3,7 @@
 import sharp from 'sharp';
 import { fileURLToPath } from 'node:url';
 
-const SOURCE_URL = 'https://raw.githubusercontent.com/NelsonEU/arn0-tv/main/src/img/wallpapers/milky-way.jpg';
+const SOURCE_URL = 'https://raw.githubusercontent.com/NelsonEU/arn0-tv/b35c292e5bc63648cb8fef576bf5eacd9ea488d1/src/img/wallpapers/milky-way.jpg';
 const OUT = fileURLToPath(new URL('../assets/fallback.jpg', import.meta.url));
 
 const res = await fetch(SOURCE_URL);

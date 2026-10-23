@@ -5,13 +5,6 @@ import sharp from 'sharp';
 
 const W = 1920;
 const H = 1080;
-// Darken top (clock) and bottom (rows) so text stays readable; baked in, never drawn live on the TV.
-const OVERLAY = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-  <defs>
-    <linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0.55"/><stop offset="0.3" stop-color="#000" stop-opacity="0"/></linearGradient>
-    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.8"/></linearGradient>
-  </defs><rect width="${W}" height="${H}" fill="url(#t)"/><rect width="${W}" height="${H}" fill="url(#b)"/></svg>`);
-
 async function withTimeout(fetchImpl, url, init, timeoutMs) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
@@ -35,8 +28,7 @@ async function listAlbumImages({ apiUrl, apiKey, albumId, max, fetchImpl, timeou
 }
 
 async function render(input, path) {
-  await sharp(input).rotate().resize(W, H, { fit: 'cover', position: 'attention' })
-    .composite([{ input: OVERLAY }]).jpeg({ quality: 80, mozjpeg: true }).toFile(path);
+  await sharp(input).rotate().resize(W, H, { fit: 'cover', position: 'attention' }).jpeg({ quality: 80, mozjpeg: true }).toFile(path);
 }
 
 async function writeListing(outDir, files) {
