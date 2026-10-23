@@ -12,7 +12,7 @@
       launch: function (id, ok) { window.__MOCK_LOG.push(['launch', id]); setTimeout(ok, 0); }
     },
     systeminfo: { getPropertyValue: function (p, ok) { setTimeout(function () { ok(sources); }, 0); } },
-    tvwindow: { setSource: function (src, ok) { window.__MOCK_LOG.push(['input', src.number]); setTimeout(ok, 0); } },
+    tvwindow: { setSource: function (src, ok) { window.__MOCK_LOG.push(src.type === 'HDMI' ? ['input', src.number] : ['source', src.type, src.number]); setTimeout(ok, 0); } },
     tvinputdevice: { registerKey: function () {} }
   };
 })();

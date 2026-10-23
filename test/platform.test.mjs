@@ -37,6 +37,23 @@ test('openInput finds a DISCONNECTED port too, sets MAIN source, then opens the 
   await P.create(t).openInput(2);
   assert.deepEqual(t.calls, [['setSource', 2, 'MAIN'], ['launch', P.VIEWER_APP]]);
 });
+const withTv = (calls, over = {}) => fakeTizen({
+  systeminfo: { getPropertyValue: (p, ok) => ok({ connected: [{ type: 'HDMI', number: 1 }, { type: 'TV', number: 1 }], disconnected: [] }) },
+  tvwindow: { setSource: (src, ok, err, win) => { calls.push(['setSource', src.type, src.number, win]); ok(); } },
+  ...over,
+});
+test('selectTuner sets the TV source on MAIN', async () => {
+  const calls = [];
+  await P.create(withTv(calls)).selectTuner();
+  assert.deepEqual(calls, [['setSource', 'TV', 1, 'MAIN']]);
+});
+test('selectTuner rejects when the TV reports no tuner source', async () => {
+  await assert.rejects(P.create(fakeTizen()).selectTuner(), /No TV tuner/);
+});
+test('selectTuner rejects after the timeout if setSource never answers', async () => {
+  const t = withTv([], { tvwindow: { setSource: () => {} } });
+  await assert.rejects(P.create(t, { timeoutMs: 20 }).selectTuner(), /Select tuner: the TV did not respond/);
+});
 test('openInput rejects for an unknown port', async () => {
   await assert.rejects(P.create(fakeTizen()).openInput(4), /HDMI 4/);
 });

@@ -25,12 +25,12 @@ test('OK launches the focused app', async ({ page }) => {
   expect(log[0][0]).toBe('launch');
 });
 
-test('iPlayer launches via its store id first', async ({ page }) => {
+test('iPlayer selects the TV tuner, then launches via its store id first', async ({ page }) => {
   await page.keyboard.press('ArrowRight');
   expect(await focusedKey(page)).toBe('iplayer');
   await page.keyboard.press('Enter');
-  const log = await page.evaluate(() => window.__MOCK_LOG);
-  expect(log[0]).toEqual(['launch', '3201601007670']);
+  await expect.poll(() => page.evaluate(() => window.__MOCK_LOG.slice(0, 2)))
+    .toEqual([['source', 'TV', 1], ['launch', '3201601007670']]);
 });
 
 test('Switch tile selects HDMI 2 then opens the viewer', async ({ page }) => {

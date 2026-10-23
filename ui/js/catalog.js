@@ -7,7 +7,7 @@
   function idMatch(id) { return '^' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'; }
   var APPS = [
     { key: 'netflix', label: 'Netflix', match: idMatch('org.tizen.netflix-app') },
-    { key: 'iplayer', label: 'BBC iPlayer', match: idMatch('DqEoaplKlw.bbchybrid'), launchIds: ['3201601007670'] },
+    { key: 'iplayer', label: 'BBC iPlayer', match: idMatch('DqEoaplKlw.bbchybrid'), launchIds: ['3201601007670'], prelaunch: 'tuner' },
     { key: 'disney', label: 'Disney+', match: idMatch('MCmYXNxgcu.DisneyPlus') },
     { key: 'appletv', label: 'Apple TV', match: idMatch('com.samsung.tv.aria-video') },
     { key: 'plex', label: 'Plex', match: idMatch('kIciSQlYEM.plex') },
@@ -48,7 +48,7 @@
       var a = find(installed, e, used);
       if (a) {
         used[a.id] = true;
-        found.push({ key: e.key, label: e.label, appId: a.id, iconPath: a.iconPath || '', launchIds: e.launchIds || [], defaultHidden: !!e.hidden });
+        found.push({ key: e.key, label: e.label, appId: a.id, iconPath: a.iconPath || '', launchIds: e.launchIds || [], prelaunch: e.prelaunch || null, defaultHidden: !!e.hidden });
       } else {
         missing.push({ key: e.key, label: e.label });
       }
@@ -69,7 +69,7 @@
     for (var n = 0; n < ordered.length; n++) {
       var tile = ordered[n];
       var isHidden = prefs.hidden === null ? tile.defaultHidden : prefs.hidden.indexOf(tile.key) >= 0;
-      var out = { key: tile.key, label: tile.label, appId: tile.appId, iconPath: tile.iconPath, launchIds: tile.launchIds };
+      var out = { key: tile.key, label: tile.label, appId: tile.appId, iconPath: tile.iconPath, launchIds: tile.launchIds, prelaunch: tile.prelaunch };
       (isHidden ? hidden : visible).push(out);
     }
     return { visible: visible, hidden: hidden, missing: missing };

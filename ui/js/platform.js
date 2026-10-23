@@ -45,6 +45,17 @@
         return call('Switch input', function (ok, err) { tizen.tvwindow.setSource(src, ok, err, 'MAIN'); });
       }).then(function () { return launch(VIEWER_APP); });
     }
+    // Set the main window to the first TV-tuner source (hybrid broadcast apps need it).
+    function selectTuner() {
+      return call('Input list', function (ok, err) {
+        tizen.systeminfo.getPropertyValue('VIDEOSOURCE', ok, err);
+      }).then(function (info) {
+        var all = (info.connected || []).concat(info.disconnected || []);
+        var src = all.find(function (s) { return s.type === 'TV'; });
+        if (!src) { throw new Error('No TV tuner source is reported by the TV'); }
+        return call('Select tuner', function (ok, err) { tizen.tvwindow.setSource(src, ok, err, 'MAIN'); });
+      });
+    }
     // {hdmiNumber: connected?} from VIDEOSOURCE.
     function inputStatus() {
       return call('Input status', function (ok, err) {
@@ -63,7 +74,7 @@
         try { tizen.tvinputdevice.registerKey(names[i]); } catch (e) { /* key unsupported on this model */ }
       }
     }
-    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, inputStatus: inputStatus, registerKeys: registerKeys };
+    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, selectTuner: selectTuner, inputStatus: inputStatus, registerKeys: registerKeys };
   }
   return { create: create, VIEWER_APP: VIEWER_APP };
 });

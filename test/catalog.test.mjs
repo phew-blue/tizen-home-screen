@@ -87,3 +87,9 @@ test('iplayer carries its store launch id; other tiles have none', () => {
   assert.deepEqual(tiles.find((t) => t.key === 'iplayer').launchIds, ['3201601007670']);
   for (const t of tiles.filter((x) => x.key !== 'iplayer')) { assert.deepEqual(t.launchIds, [], t.key); }
 });
+
+test('only iplayer carries prelaunch: tuner; resolved tiles copy it (default null)', () => {
+  assert.deepEqual(C.APPS.filter((a) => a.prelaunch).map((a) => [a.key, a.prelaunch]), [['iplayer', 'tuner']]);
+  const r = C.resolve(fixture, C.APPS, { order: [], hidden: null });
+  for (const tile of r.visible) assert.equal(tile.prelaunch, tile.key === 'iplayer' ? 'tuner' : null);
+});

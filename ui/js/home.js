@@ -120,7 +120,13 @@
       if (!sel || !sel.tile) { return; }
       var t = sel.tile;
       var p;
-      if (sel.row === 0) { p = platform.launchFirst((t.launchIds || []).concat([t.appId])); }
+      if (sel.row === 0) {
+        var ids = (t.launchIds || []).concat([t.appId]);
+        if (t.prelaunch === 'tuner') {
+          // Launch even if the tuner switch fails; the app may still open.
+          p = platform.selectTuner().then(null, function () {}).then(function () { return platform.launchFirst(ids); });
+        } else { p = platform.launchFirst(ids); }
+      }
       else if (t.hdmi) { p = platform.openInput(t.hdmi); }
       else { p = platform.launch(Catalog.SAMSUNG_HOME_APP_ID); }
       p.then(null, fail);
