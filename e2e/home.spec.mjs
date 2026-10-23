@@ -109,3 +109,26 @@ test('console cards show their HDMI port, and Samsung Home says TV menus', async
   // Fixture reports both HDMI ports as disconnected -> dim/red dot.
   await expect(page.locator('#inputs .tile[data-key="switch"] .dot.off')).toHaveCount(1);
 });
+
+test('edit mode: a hidden-by-default app can be un-hidden', async ({ page }) => {
+  await page.keyboard.press('y');
+  for (let i = 0; i < 40 && (await focusedKey(page)) !== 'tvplus'; i++) { await page.keyboard.press('ArrowRight'); }
+  expect(await focusedKey(page)).toBe('tvplus');
+  await page.keyboard.press('b');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#apps .tile[data-key="tvplus"]')).toHaveCount(1);
+});
+
+test('edit mode: hide then un-hide the same app', async ({ page }) => {
+  await page.keyboard.press('y');
+  await page.keyboard.press('b'); // hide netflix; focus follows it into the hidden section
+  expect(await focusedKey(page)).toBe('netflix');
+  await page.keyboard.press('b'); // un-hide
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#apps .tile[data-key="netflix"]')).toHaveCount(1);
+});
+
+test('diagnostics show a memory line', async ({ page }) => {
+  await page.keyboard.press('r');
+  await expect(page.locator('#diag')).toContainText(/memory:/i);
+});

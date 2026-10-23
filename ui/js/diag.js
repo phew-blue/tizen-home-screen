@@ -4,8 +4,8 @@
 })(this, function () {
   'use strict';
   function pct(sorted, p) { return sorted.length ? sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)] : null; }
-  function create(now) {
-    var start = now(), tti = null, pending = null, moves = [];
+  function create(now, startAt) {
+    var start = typeof startAt === 'number' ? startAt : now(), tti = null, pending = null, moves = [];
     return {
       markInteractive: function () { if (tti === null) { tti = now() - start; } },
       moveStart: function () { pending = now(); },

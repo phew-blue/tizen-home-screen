@@ -44,7 +44,7 @@ test('resolves installed apps in catalog order, reports missing', () => {
   assert.deepEqual(keys(r.hidden), ['tvplus']);
   assert.ok(r.missing.some((m) => m.key === 'disney'));
 });
-test('visible app beats a hidden service with the same name', () => {
+test('netflix resolves to the real app id by default', () => {
   const r = C.resolve(installed, C.APPS, { order: [], hidden: null });
   assert.equal(r.visible.find((t) => t.key === 'netflix').appId, 'org.tizen.netflix-app');
 });

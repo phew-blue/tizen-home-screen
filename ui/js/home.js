@@ -14,14 +14,15 @@
     var platform = opts.platform;
     var storage = opts.storage;
     var Catalog = THS.Catalog, Prefs = THS.Prefs, Focus = THS.Focus;
-    var diag = THS.Diag.create(opts.now);
+    var navStart = (root.performance && root.performance.timing && root.performance.timing.navigationStart) || undefined;
+    var diag = THS.Diag.create(opts.now, navStart);
     var els = {
       stage: doc.getElementById('stage'), bg: doc.getElementById('bg'),
       apps: doc.getElementById('apps'), inputs: doc.getElementById('inputs'),
       hint: doc.getElementById('hint'), toast: doc.getElementById('toast'),
       diag: doc.getElementById('diag'), clock: doc.getElementById('clock'), date: doc.getElementById('date')
     };
-    var state = { resolved: { visible: [], hidden: [], missing: [] }, prefs: Prefs.load(storage), focus: null, editing: false, inputStatus: null };
+    var state = { resolved: { visible: [], hidden: [], missing: [] }, prefs: Prefs.load(storage), focus: null, editing: false, inputStatus: null, installed: [], moved: false };
     var toastTimer = null;
     var HINT = els.hint.innerHTML;
 
@@ -83,7 +84,7 @@
       applyFocus();
     }
     // Keep the focused tile's scaled box inside the track's padding box.
-    // The track has TRACK_PAD of padding before the first tile; SCALE_ROOM covers the 1.08 focus scale.
+    // The track has TRACK_PAD of padding before the first tile; SCALE_ROOM covers the 1.06 focus scale.
     function scrollIntoView(trackRow, tile) {
       var track = trackRow.parentNode;
       var left = tile.offsetLeft;
@@ -133,10 +134,11 @@
     }
     function rearrange(dir) {
       var sel = focusedTile();
+      if (!sel || !sel.tile) { return; }
       var keys = [], i;
       var vis = state.resolved.visible;
       for (i = 0; i < vis.length; i++) { keys.push(vis[i].key); }
-      if (state.focus.row !== 0 || !sel.tile || keys.indexOf(sel.tile.key) < 0) { return; }
+      if (sel.row !== 0 || keys.indexOf(sel.tile.key) < 0) { return; }
       state.prefs = Prefs.move(state.prefs, keys, sel.tile.key, dir === 'left' ? -1 : 1);
       Prefs.save(storage, state.prefs);
       refresh(sel.tile.key);
@@ -157,20 +159,33 @@
       Prefs.save(storage, state.prefs);
       refresh(sel.tile.key);
     }
+    function mb(n) { return (n / 1048576).toFixed(1) + ' MB'; }
+    function memLine() {
+      var m = root.performance && root.performance.memory;
+      return m && m.usedJSHeapSize ? mb(m.usedJSHeapSize) + ' / ' + mb(m.totalJSHeapSize) : 'n/a';
+    }
     function showDiag() {
       var s = diag.summary();
-      els.diag.textContent = 'TTI: ' + s.ttiMs + ' ms\nmoves: ' + s.moves + '\np50: ' + s.p50 + ' ms\np95: ' + s.p95 + ' ms';
+      els.diag.textContent = 'TTI: ' + s.ttiMs + ' ms\nmoves: ' + s.moves + '\np50: ' + s.p50 + ' ms\np95: ' + s.p95 + ' ms\nmemory: ' + memLine();
     }
     function onKey(e) {
       var a = THS.Keys.action(e);
       if (!a) { return; }
       e.preventDefault();
+      if (!state.focus) { return; }
       if (a === 'left' || a === 'right' || a === 'up' || a === 'down') {
-        if (state.editing && state.focus.row === 0 && (a === 'left' || a === 'right')) { rearrange(a); return; }
+        if (state.editing && state.focus.row === 0 && (a === 'left' || a === 'right')) {
+          // Hidden tiles sit at the end and are not reorderable: plain focus movement there.
+          var cur = focusedTile();
+          var vi = cur && cur.tile ? state.resolved.visible.indexOf(cur.tile) : -1;
+          // The last visible tile moves focus (not the tile) rightwards so hidden tiles stay reachable.
+          if (vi >= 0 && !(a === 'right' && vi === state.resolved.visible.length - 1)) { rearrange(a); return; }
+        }
         var next = Focus.move(state.focus, a, lengths());
         if (next === state.focus) { return; }
         diag.moveStart();
         state.focus = next;
+        state.moved = true;
         applyFocus();
         requestAnimationFrame(function () { diag.moveEnd(); });
       } else if (a === 'ok') {
@@ -203,24 +218,49 @@
       }, function () { /* no dot */ });
     }
 
+    function pickWallpaper() {
+      var wp = opts.wallpapers;
+      var idx = THS.Wallpaper.pickIndex(wp.length, new Date());
+      if (idx >= 0) { els.bg.style.backgroundImage = 'url("' + wp[idx] + '")'; }
+    }
+    // Align the clock tick to the next minute boundary.
+    function scheduleClock() {
+      tickClock();
+      setTimeout(scheduleClock, 60000 - (Date.now() % 60000) + 50);
+    }
+    // (Re)load the app list; preserves focus by tile key. Before the first user move, focus resets to the first tile.
+    function loadApps() {
+      return platform.listApps().then(function (apps) {
+        var sel = focusedTile();
+        var key = state.moved && sel && sel.row === 0 && sel.tile ? sel.tile.key : null;
+        state.installed = apps;
+        state.resolved = Catalog.resolve(apps, Catalog.APPS, state.prefs);
+        if (!state.moved) { state.focus = null; }
+        if (key) {
+          var tiles = appTiles();
+          for (var i = 0; i < tiles.length; i++) { if (tiles[i].key === key) { state.focus.cols[0] = i; } }
+        }
+        render();
+      }, function () {
+        toast("Couldn't read apps");
+      });
+    }
+
     platform.registerKeys(THS.Keys.TIZEN_KEYS);
-    var wp = opts.wallpapers;
-    var idx = THS.Wallpaper.pickIndex(wp.length, new Date());
-    if (idx >= 0) { els.bg.style.backgroundImage = 'url("' + wp[idx] + '")'; }
-    tickClock();
-    setInterval(tickClock, 30000);
+    pickWallpaper();
+    scheduleClock();
     doc.addEventListener('keydown', onKey);
-    doc.addEventListener('visibilitychange', function () { if (!doc.hidden) { refreshInputStatus(); } });
+    doc.addEventListener('visibilitychange', function () {
+      if (doc.hidden) { return; }
+      pickWallpaper();
+      tickClock();
+      refreshInputStatus();
+      loadApps();
+    });
+    // Inputs row is usable immediately; the apps row fills in when the list arrives.
+    render();
     refreshInputStatus();
-    state.installed = [];
-    platform.listApps().then(function (apps) {
-      state.installed = apps;
-      state.resolved = Catalog.resolve(apps, Catalog.APPS, state.prefs);
-      render();
-    }, function () {
-      render();
-      toast("Couldn't read apps");
-    }).then(function () { diag.markInteractive(); });
+    loadApps().then(function () { diag.markInteractive(); });
   }
   return { init: init };
 });

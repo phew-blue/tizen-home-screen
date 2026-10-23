@@ -16,3 +16,9 @@ test('moveEnd without moveStart is ignored', () => {
   d.moveEnd();
   assert.equal(d.summary().moves, 0);
 });
+test('tti is measured from an explicit start time', () => {
+  let t = 5000;
+  const d = D.create(() => t, 1000);
+  d.markInteractive();
+  assert.equal(d.summary().ttiMs, 4000);
+});
