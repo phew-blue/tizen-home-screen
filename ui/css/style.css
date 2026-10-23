@@ -8,10 +8,13 @@ header{position:absolute;left:96px;top:72px;}
 .row{position:absolute;left:96px;right:0;top:600px;}
 .row + .row{top:840px;}
 h2{font-size:28px;font-weight:500;opacity:.8;margin:0 0 16px;}
-.track{overflow:hidden;padding:12px 0;margin:-12px 0;}
-.tiles{display:flex;transition:transform 100ms ease-out;will-change:transform;}
+.track{overflow:hidden;padding:24px;margin:-24px 0 -24px -24px;}
+.tiles{position:relative;display:flex;transition:transform 100ms ease-out;will-change:transform;}
 .tile{flex:0 0 auto;width:240px;height:136px;margin-right:24px;border-radius:16px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:600;box-sizing:border-box;border:4px solid transparent;text-align:center;}
 .tile img{max-width:70%;max-height:70%;}
+.tile.branded{background-origin:border-box;}
+.tile.branded img.mark{width:70%;height:55%;}
+.tile .wordmark{font-size:40px;font-weight:700;letter-spacing:-.5px;}
 .tile.focused{border-color:#fff;transform:scale(1.08);transition:transform 100ms ease-out;}
 .editing .tile.focused{border-color:#ffd400;}
 .tile.is-hidden{opacity:.35;}

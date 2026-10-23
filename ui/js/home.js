@@ -6,6 +6,8 @@
   var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+  var TRACK_PAD = 24, SCALE_ROOM = 14;
+
   function init(opts) {
     var THS = root.THS;
     var doc = opts.document;
@@ -29,13 +31,23 @@
     function lengths() { return [appTiles().length, Catalog.INPUTS.length]; }
     function rowEl(i) { return i === 0 ? els.apps : els.inputs; }
 
+    function attr(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
+    // Brand mark -> brand text -> TV icon -> label.
+    function tileInner(t, brand) {
+      if (brand && brand.mark) { return '<img class="mark" src="img/tiles/' + attr(t.key) + '.svg" alt="">'; }
+      if (brand && brand.text) { return '<span class="wordmark">' + escapeHtml(brand.text) + '</span>'; }
+      if (t.iconPath) { return '<img src="' + attr(t.iconPath) + '" alt="">'; }
+      return escapeHtml(t.label);
+    }
     function renderRow(el, tiles, hiddenFrom) {
       var html = '';
       for (var i = 0; i < tiles.length; i++) {
         var t = tiles[i];
-        var cls = 'tile' + (hiddenFrom !== undefined && i >= hiddenFrom ? ' is-hidden' : '');
-        var inner = t.iconPath ? '<img src="' + String(t.iconPath).replace(/"/g, '&quot;') + '" alt="">' : escapeHtml(t.label);
-        html += '<div class="' + cls + '" data-key="' + t.key + '">' + inner + '</div>';
+        var brand = THS.Brands.get(t.key);
+        var logo = brand && (brand.mark || brand.text);
+        var cls = 'tile' + (logo ? ' branded' : '') + (hiddenFrom !== undefined && i >= hiddenFrom ? ' is-hidden' : '');
+        var style = logo ? ' style="background:' + brand.bg + ';color:' + brand.fg + '"' : '';
+        html += '<div class="' + cls + '" data-key="' + attr(t.key) + '" title="' + attr(t.label) + '" aria-label="' + attr(t.label) + '"' + style + '>' + tileInner(t, brand) + '</div>';
       }
       el.innerHTML = html;
     }
@@ -57,10 +69,14 @@
       updateHint();
       applyFocus();
     }
+    // Keep the focused tile's scaled box inside the track's padding box.
+    // The track has TRACK_PAD of padding before the first tile; SCALE_ROOM covers the 1.08 focus scale.
     function scrollIntoView(trackRow, tile) {
       var track = trackRow.parentNode;
-      var right = tile.offsetLeft + tile.offsetWidth;
-      var shift = Math.max(0, right + 24 - track.clientWidth);
+      var left = tile.offsetLeft;
+      var right = left + tile.offsetWidth;
+      var shift = Math.max(0, TRACK_PAD + right + SCALE_ROOM - track.clientWidth);
+      shift = Math.min(shift, Math.max(0, left + TRACK_PAD - SCALE_ROOM));
       trackRow.style.transform = shift ? 'translateX(' + (-shift) + 'px)' : '';
     }
     function applyFocus() {

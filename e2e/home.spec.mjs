@@ -63,3 +63,23 @@ test('Red opens diagnostics with a time-to-interactive', async ({ page }) => {
   await expect(page.locator('#diag')).toHaveClass(/open/);
   await expect(page.locator('#diag')).toContainText(/tti/i);
 });
+
+const within = (page, rowSel) => page.evaluate((sel) => {
+  const t = document.querySelector(`${sel} .tile.focused`).getBoundingClientRect();
+  const r = document.querySelector(sel).parentElement.getBoundingClientRect();
+  return { l: t.left - r.left, t: t.top - r.top, r: r.right - t.right, b: r.bottom - t.bottom };
+}, rowSel);
+const expectInside = (m) => {
+  for (const k of ['l', 't', 'r', 'b']) { expect(m[k]).toBeGreaterThanOrEqual(-0.5); }
+};
+
+test('focused tile is not clipped', async ({ page }) => {
+  expectInside(await within(page, '#apps'));
+  const n = await page.locator('#apps .tile').count();
+  for (let i = 1; i < n; i++) { await page.keyboard.press('ArrowRight'); }
+  await page.waitForTimeout(200);
+  expectInside(await within(page, '#apps'));
+  await page.keyboard.press('ArrowDown');
+  await page.waitForTimeout(200);
+  expectInside(await within(page, '#inputs'));
+});
