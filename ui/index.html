@@ -7,10 +7,26 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="stage"></div>
+<div id="stage">
+  <div id="bg"></div>
+  <header><div id="clock"></div><div id="date"></div></header>
+  <section class="row"><h2>Apps</h2><div class="track"><div id="apps" class="tiles"></div></div></section>
+  <section class="row"><h2>Inputs</h2><div class="track"><div id="inputs" class="tiles"></div></div></section>
+  <div id="hint">Yellow: arrange · Red: diagnostics</div>
+  <div id="toast"></div>
+  <pre id="diag"></pre>
+</div>
 <script src="js/mock-apps.js" data-preview-only></script>
 <script src="js/tizen-mock.js" data-preview-only></script>
 <script src="wallpapers.js"></script>
+<script src="js/keys.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/prefs.js"></script>
+<script src="js/platform.js"></script>
+<script src="js/wallpaper.js"></script>
+<script src="js/diag.js"></script>
+<script src="js/home.js"></script>
 <script src="js/boot.js"></script>
 </body>
 </html>
