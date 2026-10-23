@@ -3,21 +3,23 @@
   else { root.THS = root.THS || {}; root.THS.Catalog = factory(); }
 })(this, function () {
   'use strict';
+  // Match by exact app id: names collide with service apps (e.g. two "Apple TV", "YouTube").
+  function idMatch(id) { return '^' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'; }
   var APPS = [
-    { key: 'netflix', label: 'Netflix', match: '^netflix$' },
-    { key: 'iplayer', label: 'BBC iPlayer', match: 'iplayer' },
-    { key: 'disney', label: 'Disney+', match: '^disney' },
-    { key: 'appletv', label: 'Apple TV', match: '^apple ?tv' },
-    { key: 'plex', label: 'Plex', match: '^plex' },
-    { key: 'youtube', label: 'YouTube', match: '^youtube$' },
-    { key: 'twitch', label: 'Twitch', match: '^twitch' },
-    { key: 'spotify', label: 'Spotify', match: '^spotify' },
-    { key: 'itvx', label: 'ITVX', match: '^itvx' },
-    { key: 'channel4', label: 'Channel 4', match: '^channel ?4' },
-    { key: 'now', label: 'NOW', match: '^now( tv)?$' },
-    { key: 'tvplus', label: 'Samsung TV Plus', match: '^samsung tv plus', hidden: true },
-    { key: 'gallery', label: 'Gallery', match: '^gallery$', hidden: true },
-    { key: 'internet', label: 'Internet', match: '^internet$', hidden: true }
+    { key: 'netflix', label: 'Netflix', match: idMatch('org.tizen.netflix-app') },
+    { key: 'iplayer', label: 'BBC iPlayer', match: idMatch('DqEoaplKlw.bbchybrid') },
+    { key: 'disney', label: 'Disney+', match: idMatch('MCmYXNxgcu.DisneyPlus') },
+    { key: 'appletv', label: 'Apple TV', match: idMatch('com.samsung.tv.aria-video') },
+    { key: 'plex', label: 'Plex', match: idMatch('kIciSQlYEM.plex') },
+    { key: 'youtube', label: 'YouTube', match: idMatch('com.samsung.tv.cobalt-yt') },
+    { key: 'twitch', label: 'Twitch', match: idMatch('Jz7aUrV2Q4.Twitch') },
+    { key: 'spotify', label: 'Spotify', match: idMatch('rJeHak5zRg.Spotify') },
+    { key: 'itvx', label: 'ITVX', match: idMatch('OEvCiupaFR.ITVHub') },
+    { key: 'channel4', label: 'Channel 4', match: idMatch('OCaxbgg9v6.chfourctv') },
+    { key: 'now', label: 'NOW', match: idMatch('1Qb6IoAcGC.NowTV') },
+    { key: 'tvplus', label: 'Samsung TV Plus', match: idMatch('com.samsung.tv.tvPlusDeeplinker'), hidden: true },
+    { key: 'gallery', label: 'Gallery', match: idMatch('com.samsung.tv.gallery'), hidden: true },
+    { key: 'internet', label: 'Internet', match: idMatch('org.tizen.browser'), hidden: true }
   ];
   var INPUTS = [
     { key: 'steam', label: 'Steam Machine', hdmi: 1 },

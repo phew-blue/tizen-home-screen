@@ -1,18 +1,33 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import fs from 'node:fs';
+import vm from 'node:vm';
 const C = createRequire(import.meta.url)('../ui/js/catalog.js');
 
 const app = (id, name, show = true) => ({ id, name, iconPath: `/icons/${id}.png`, show });
 const installed = [
-  app('11101200001', 'Netflix'),
-  app('3201602007865', 'BBC iPlayer'),
-  app('111299001912', 'YouTube'),
-  app('3201910019365', 'YouTube Kids'),
+  app('org.tizen.netflix-app', 'Netflix'),
+  app('DqEoaplKlw.bbchybrid', 'BBC iPlayer'),
+  app('com.samsung.tv.cobalt-yt', 'Youtube'),
+  app('com.samsung.tv.cobalt-ytkids', 'YoutubeKids'),
   app('org.tizen.netflix-service', 'Netflix', false),
-  app('3201807016597', 'Samsung TV Plus'),
+  app('com.samsung.tv.tvPlusDeeplinker', 'Samsung TV Plus', false),
 ];
 const keys = (tiles) => tiles.map((t) => t.key);
+// The real TV's app list (including service apps that share names with real ones).
+const fixture = (() => {
+  const w = {};
+  vm.runInNewContext(fs.readFileSync(new URL('../preview/fixtures/apps.js', import.meta.url), 'utf8'), { window: w });
+  return w.__MOCK_APPS__;
+})();
+const INTENDED = {
+  netflix: 'org.tizen.netflix-app', iplayer: 'DqEoaplKlw.bbchybrid', disney: 'MCmYXNxgcu.DisneyPlus',
+  appletv: 'com.samsung.tv.aria-video', plex: 'kIciSQlYEM.plex', youtube: 'com.samsung.tv.cobalt-yt',
+  twitch: 'Jz7aUrV2Q4.Twitch', spotify: 'rJeHak5zRg.Spotify', itvx: 'OEvCiupaFR.ITVHub',
+  channel4: 'OCaxbgg9v6.chfourctv', now: '1Qb6IoAcGC.NowTV', tvplus: 'com.samsung.tv.tvPlusDeeplinker',
+  gallery: 'com.samsung.tv.gallery', internet: 'org.tizen.browser',
+};
 
 test('catalog default order matches the spec', () => {
   assert.deepEqual(C.APPS.filter((e) => !e.hidden).map((e) => e.label),
@@ -31,11 +46,24 @@ test('resolves installed apps in catalog order, reports missing', () => {
 });
 test('visible app beats a hidden service with the same name', () => {
   const r = C.resolve(installed, C.APPS, { order: [], hidden: null });
-  assert.equal(r.visible.find((t) => t.key === 'netflix').appId, '11101200001');
+  assert.equal(r.visible.find((t) => t.key === 'netflix').appId, 'org.tizen.netflix-app');
 });
 test('YouTube does not grab YouTube Kids', () => {
   const r = C.resolve(installed, C.APPS, { order: [], hidden: null });
-  assert.equal(r.visible.find((t) => t.key === 'youtube').appId, '111299001912');
+  assert.equal(r.visible.find((t) => t.key === 'youtube').appId, 'com.samsung.tv.cobalt-yt');
+});
+test('every catalog key resolves to exactly its intended id on the full real app list', () => {
+  const r = C.resolve(fixture, C.APPS, { order: [], hidden: null });
+  assert.deepEqual(r.missing, []);
+  const got = {};
+  r.visible.concat(r.hidden).forEach((t) => { got[t.key] = t.appId; });
+  assert.deepEqual(got, INTENDED);
+});
+test('catalog resolution does not depend on fixture order', () => {
+  const r = C.resolve(fixture.slice().reverse(), C.APPS, { order: [], hidden: null });
+  const got = {};
+  r.visible.concat(r.hidden).forEach((t) => { got[t.key] = t.appId; });
+  assert.deepEqual(got, INTENDED);
 });
 test('an installed app is never used by two entries', () => {
   const dup = [{ key: 'a', label: 'A', match: 'netflix' }, { key: 'b', label: 'B', match: 'netflix' }];
