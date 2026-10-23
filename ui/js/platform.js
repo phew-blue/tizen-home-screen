@@ -45,12 +45,25 @@
         return call('Switch input', function (ok, err) { tizen.tvwindow.setSource(src, ok, err, 'MAIN'); });
       }).then(function () { return launch(VIEWER_APP); });
     }
+    // {hdmiNumber: connected?} from VIDEOSOURCE.
+    function inputStatus() {
+      return call('Input status', function (ok, err) {
+        tizen.systeminfo.getPropertyValue('VIDEOSOURCE', ok, err);
+      }).then(function (info) {
+        var out = {}, i, list;
+        list = info.disconnected || [];
+        for (i = 0; i < list.length; i++) { if (list[i].type === 'HDMI') { out[list[i].number] = false; } }
+        list = info.connected || [];
+        for (i = 0; i < list.length; i++) { if (list[i].type === 'HDMI') { out[list[i].number] = true; } }
+        return out;
+      });
+    }
     function registerKeys(names) {
       for (var i = 0; i < names.length; i++) {
         try { tizen.tvinputdevice.registerKey(names[i]); } catch (e) { /* key unsupported on this model */ }
       }
     }
-    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, registerKeys: registerKeys };
+    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, inputStatus: inputStatus, registerKeys: registerKeys };
   }
   return { create: create, VIEWER_APP: VIEWER_APP };
 });

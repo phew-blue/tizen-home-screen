@@ -9,10 +9,11 @@
 <body>
 <div id="stage">
   <div id="bg"></div>
+  <div id="shade"></div>
   <header><div id="clock"></div><div id="date"></div></header>
-  <section class="row"><h2>Apps</h2><div class="track"><div id="apps" class="tiles"></div></div></section>
-  <section class="row"><h2>Inputs</h2><div class="track"><div id="inputs" class="tiles"></div></div></section>
-  <div id="hint">Yellow: arrange · Red: diagnostics</div>
+  <section class="row apps"><h2>Apps</h2><div class="track"><div id="apps" class="tiles"></div></div></section>
+  <section class="row consoles"><h2>Consoles</h2><div class="track"><div id="inputs" class="tiles"></div></div></section>
+  <div id="hint"><span class="key">OK</span><span class="act">Open</span><span class="key yellow">Yellow</span><span class="act">Arrange</span><span class="key red">Red</span><span class="act">Diagnostics</span></div>
   <div id="toast"></div>
   <pre id="diag"></pre>
 </div>

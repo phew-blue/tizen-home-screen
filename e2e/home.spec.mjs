@@ -91,3 +91,21 @@ test('focused tile is not clipped', async ({ page }) => {
   await page.waitForTimeout(200);
   expectInside(await within(page, '#inputs'));
 });
+
+test('app tiles show a visible label equal to the app name', async ({ page }) => {
+  const names = { netflix: 'Netflix', iplayer: 'BBC iPlayer' };
+  for (const [key, name] of Object.entries(names)) {
+    const label = page.locator(`#apps .tile[data-key="${key}"] .label`);
+    await expect(label).toBeVisible();
+    await expect(label).toHaveText(name);
+  }
+});
+
+test('console cards show their HDMI port, and Samsung Home says TV menus', async ({ page }) => {
+  await expect(page.locator('#inputs .tile[data-key="switch"]')).toContainText('HDMI 2');
+  await expect(page.locator('#inputs .tile[data-key="steam"]')).toContainText('HDMI 1');
+  await expect(page.locator('#inputs .tile[data-key="samsung-home"]')).toContainText('TV menus');
+  await expect(page.locator('#inputs .tile[data-key="samsung-home"] .dot')).toHaveCount(0);
+  // Fixture reports both HDMI ports as disconnected -> dim/red dot.
+  await expect(page.locator('#inputs .tile[data-key="switch"] .dot.off')).toHaveCount(1);
+});

@@ -84,3 +84,15 @@ test('launchFirst with a single id behaves like launch', async () => {
   assert.deepEqual(t.application.log, ['x']);
   await assert.rejects(P.create(launchTizen(['y'])).launchFirst(['y']), /no y/);
 });
+
+test('inputStatus maps HDMI ports to connected booleans', async () => {
+  assert.deepEqual(await P.create(fakeTizen()).inputStatus(), { 1: true, 2: false });
+});
+test('inputStatus ignores non-HDMI sources and tolerates missing lists', async () => {
+  const t = fakeTizen({ systeminfo: { getPropertyValue: (p, ok) => ok({ connected: [{ type: 'TV', number: 1 }, { type: 'HDMI', number: 3 }] }) } });
+  assert.deepEqual(await P.create(t).inputStatus(), { 3: true });
+});
+test('inputStatus rejects when the TV errors', async () => {
+  const t = fakeTizen({ systeminfo: { getPropertyValue: (p, ok, err) => err(new Error('boom')) } });
+  await assert.rejects(P.create(t).inputStatus(), /boom/);
+});

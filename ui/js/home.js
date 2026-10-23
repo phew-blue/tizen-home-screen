@@ -21,9 +21,9 @@
       hint: doc.getElementById('hint'), toast: doc.getElementById('toast'),
       diag: doc.getElementById('diag'), clock: doc.getElementById('clock'), date: doc.getElementById('date')
     };
-    var state = { resolved: { visible: [], hidden: [], missing: [] }, prefs: Prefs.load(storage), focus: null, editing: false };
+    var state = { resolved: { visible: [], hidden: [], missing: [] }, prefs: Prefs.load(storage), focus: null, editing: false, inputStatus: null };
     var toastTimer = null;
-    var HINT = els.hint.textContent;
+    var HINT = els.hint.innerHTML;
 
     function appTiles() {
       return state.editing ? state.resolved.visible.concat(state.resolved.hidden) : state.resolved.visible;
@@ -45,17 +45,30 @@
         var t = tiles[i];
         var brand = THS.Brands.get(t.key);
         var logo = brand && (brand.mark || brand.text);
+        var isConsole = el === els.inputs;
         var cls = 'tile' + (logo ? ' branded' : '') + (hiddenFrom !== undefined && i >= hiddenFrom ? ' is-hidden' : '');
         var style = logo ? ' style="background:' + brand.bg + ';color:' + brand.fg + '"' : '';
-        html += '<div class="' + cls + '" data-key="' + attr(t.key) + '" title="' + attr(t.label) + '" aria-label="' + attr(t.label) + '"' + style + '>' + tileInner(t, brand) + '</div>';
+        var inner = isConsole
+          ? tileInner(t, brand) + '<span class="meta"><span class="title">' + escapeHtml(t.label) + '</span>' + statusLine(t) + '</span>'
+          : tileInner(t, brand);
+        html += '<div class="' + cls + '" data-key="' + attr(t.key) + '" title="' + attr(t.label) + '" aria-label="' + attr(t.label) + '">' +
+          '<div class="card"' + style + '>' + inner + '</div>' +
+          (isConsole ? '' : '<div class="label">' + escapeHtml(t.label) + '</div>') + '</div>';
       }
       el.innerHTML = html;
+    }
+    // Console status: coloured dot (when the HDMI state is known) + "HDMI n"; non-HDMI cards say "TV menus".
+    function statusLine(t) {
+      if (!t.hdmi) { return '<span class="status">TV menus</span>'; }
+      var known = state.inputStatus && state.inputStatus[t.hdmi] !== undefined;
+      var dot = known ? '<span class="dot ' + (state.inputStatus[t.hdmi] ? 'on' : 'off') + '"></span>' : '';
+      return '<span class="status">' + dot + 'HDMI ' + t.hdmi + '</span>';
     }
     function escapeHtml(s) {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
     function updateHint() {
-      if (!state.editing) { els.hint.textContent = HINT; return; }
+      if (!state.editing) { els.hint.innerHTML = HINT; return; }
       var m = state.resolved.missing;
       var names = [];
       for (var i = 0; i < m.length; i++) { names.push(m[i].label); }
@@ -175,6 +188,15 @@
       els.date.textContent = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
     }
 
+    // HDMI connection dots: best effort, never surfaces an error.
+    function refreshInputStatus() {
+      if (!platform.inputStatus) { return; }
+      platform.inputStatus().then(function (st) {
+        state.inputStatus = st;
+        if (state.focus) { renderRow(els.inputs, Catalog.INPUTS); applyFocus(); }
+      }, function () { /* no dot */ });
+    }
+
     platform.registerKeys(THS.Keys.TIZEN_KEYS);
     var wp = opts.wallpapers;
     var idx = THS.Wallpaper.pickIndex(wp.length, new Date());
@@ -182,6 +204,8 @@
     tickClock();
     setInterval(tickClock, 30000);
     doc.addEventListener('keydown', onKey);
+    doc.addEventListener('visibilitychange', function () { if (!doc.hidden) { refreshInputStatus(); } });
+    refreshInputStatus();
     state.installed = [];
     platform.listApps().then(function (apps) {
       state.installed = apps;
