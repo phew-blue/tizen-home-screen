@@ -23,7 +23,10 @@ else
   APP_ID=PhewProbe1.Probe
 fi
 tizen package -t wgt -s ths -- "$WORK/stage"
-WGT=$(ls "$WORK"/stage/*.wgt)
+PKG=${APP_ID%%.*}
+PRODUCED=$(ls "$WORK"/stage/*.wgt)
+WGT="$WORK/stage/$PKG.wgt"
+[ "$PRODUCED" = "$WGT" ] || mv "$PRODUCED" "$WGT"
 sdb connect "$TV_HOST"
 trap 'sdb disconnect "$TV_HOST" >/dev/null 2>&1; rm -rf "$WORK"' EXIT
 tizen install -n "$(basename "$WGT")" -s "$TV_HOST" -- "$WORK/stage"
