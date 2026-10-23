@@ -25,6 +25,14 @@ test('OK launches the focused app', async ({ page }) => {
   expect(log[0][0]).toBe('launch');
 });
 
+test('iPlayer launches via its store id first', async ({ page }) => {
+  await page.keyboard.press('ArrowRight');
+  expect(await focusedKey(page)).toBe('iplayer');
+  await page.keyboard.press('Enter');
+  const log = await page.evaluate(() => window.__MOCK_LOG);
+  expect(log[0]).toEqual(['launch', '3201601007670']);
+});
+
 test('Switch tile selects HDMI 2 then opens the viewer', async ({ page }) => {
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowRight');

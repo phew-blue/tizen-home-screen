@@ -26,6 +26,15 @@
     function launch(appId) {
       return call('Launch', function (ok, err) { tizen.application.launch(appId, ok, err); });
     }
+    // Try each id in order; resolve on the first success, reject with the last error.
+    function launchFirst(ids) {
+      if (!ids.length) { return Promise.reject(new Error('Launch: no app id')); }
+      var p = launch(ids[0]);
+      ids.slice(1).forEach(function (id) {
+        p = p.then(null, function () { return launch(id); });
+      });
+      return p;
+    }
     function openInput(hdmi) {
       return call('Input list', function (ok, err) {
         tizen.systeminfo.getPropertyValue('VIDEOSOURCE', ok, err);
@@ -41,7 +50,7 @@
         try { tizen.tvinputdevice.registerKey(names[i]); } catch (e) { /* key unsupported on this model */ }
       }
     }
-    return { listApps: listApps, launch: launch, openInput: openInput, registerKeys: registerKeys };
+    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, registerKeys: registerKeys };
   }
   return { create: create, VIEWER_APP: VIEWER_APP };
 });

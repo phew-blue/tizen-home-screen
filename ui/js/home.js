@@ -107,7 +107,7 @@
       if (!sel || !sel.tile) { return; }
       var t = sel.tile;
       var p;
-      if (sel.row === 0) { p = platform.launch(t.appId); }
+      if (sel.row === 0) { p = platform.launchFirst((t.launchIds || []).concat([t.appId])); }
       else if (t.hdmi) { p = platform.openInput(t.hdmi); }
       else { p = platform.launch(Catalog.SAMSUNG_HOME_APP_ID); }
       p.then(null, fail);

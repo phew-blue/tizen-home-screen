@@ -53,3 +53,34 @@ test('registerKeys swallows per-key failures', () => {
   P.create(t).registerKeys(['bad', 'ColorF0Red']);
   assert.deepEqual(t.calls, ['ColorF0Red']);
 });
+
+function launchTizen(failIds) {
+  return fakeTizen({
+    application: {
+      getAppsInfo: () => {},
+      launch(id, ok, err) { this.log.push(id); failIds.includes(id) ? err(new Error('no ' + id)) : ok(); },
+      log: [],
+    },
+  });
+}
+test('launchFirst stops at the first success', async () => {
+  const t = launchTizen([]);
+  await P.create(t).launchFirst(['a', 'b']);
+  assert.deepEqual(t.application.log, ['a']);
+});
+test('launchFirst falls through to the next id when one rejects', async () => {
+  const t = launchTizen(['a']);
+  await P.create(t).launchFirst(['a', 'b']);
+  assert.deepEqual(t.application.log, ['a', 'b']);
+});
+test('launchFirst rejects with the last error when all fail', async () => {
+  const t = launchTizen(['a', 'b']);
+  await assert.rejects(P.create(t).launchFirst(['a', 'b']), /no b/);
+  assert.deepEqual(t.application.log, ['a', 'b']);
+});
+test('launchFirst with a single id behaves like launch', async () => {
+  const t = launchTizen([]);
+  await P.create(t).launchFirst(['x']);
+  assert.deepEqual(t.application.log, ['x']);
+  await assert.rejects(P.create(launchTizen(['y'])).launchFirst(['y']), /no y/);
+});
