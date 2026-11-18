@@ -7,7 +7,7 @@
   function idMatch(id) { return '^' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'; }
   var APPS = [
     { key: 'netflix', label: 'Netflix', match: idMatch('org.tizen.netflix-app') },
-    { key: 'iplayer', label: 'BBC iPlayer', match: idMatch('DqEoaplKlw.bbchybrid'), launchIds: ['3201601007670'], prelaunch: 'tuner' },
+    { key: 'iplayer', label: 'BBC iPlayer', match: idMatch('DqEoaplKlw.bbchybrid'), prelaunch: 'tuner' },
     { key: 'disney', label: 'Disney+', match: idMatch('MCmYXNxgcu.DisneyPlus') },
     { key: 'appletv', label: 'Apple TV', match: idMatch('com.samsung.tv.aria-video') },
     { key: 'plex', label: 'Plex', match: idMatch('kIciSQlYEM.plex') },

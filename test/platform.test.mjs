@@ -54,6 +54,13 @@ test('selectTuner rejects after the timeout if setSource never answers', async (
   const t = withTv([], { tvwindow: { setSource: () => {} } });
   await assert.rejects(P.create(t, { timeoutMs: 20 }).selectTuner(), /Select tuner: the TV did not respond/);
 });
+test('hideSelf hides the current application', () => {
+  const calls = [];
+  const t = fakeTizen();
+  t.application.getCurrentApplication = () => ({ hide: () => calls.push('hide') });
+  P.create(t).hideSelf();
+  assert.deepEqual(calls, ['hide']);
+});
 test('openInput rejects for an unknown port', async () => {
   await assert.rejects(P.create(fakeTizen()).openInput(4), /HDMI 4/);
 });

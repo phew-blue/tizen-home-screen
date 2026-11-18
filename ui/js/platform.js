@@ -56,6 +56,9 @@
         return call('Select tuner', function (ok, err) { tizen.tvwindow.setSource(src, ok, err, 'MAIN'); });
       });
     }
+    function hideSelf() {
+      tizen.application.getCurrentApplication().hide();
+    }
     // {hdmiNumber: connected?} from VIDEOSOURCE.
     function inputStatus() {
       return call('Input status', function (ok, err) {
@@ -74,7 +77,7 @@
         try { tizen.tvinputdevice.registerKey(names[i]); } catch (e) { /* key unsupported on this model */ }
       }
     }
-    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, selectTuner: selectTuner, inputStatus: inputStatus, registerKeys: registerKeys };
+    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, selectTuner: selectTuner, hideSelf: hideSelf, inputStatus: inputStatus, registerKeys: registerKeys };
   }
   return { create: create, VIEWER_APP: VIEWER_APP };
 });

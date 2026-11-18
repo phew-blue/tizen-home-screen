@@ -81,11 +81,9 @@ test('prefs hidden replaces catalog defaults', () => {
   assert.deepEqual(keys(r.hidden), ['iplayer']);
 });
 
-test('iplayer carries its store launch id; other tiles have none', () => {
+test('no tile carries extra launch ids (iPlayer launches by its Tizen id)', () => {
   const r = C.resolve(fixture, C.APPS, { order: [], hidden: [] });
-  const tiles = r.visible.concat(r.hidden);
-  assert.deepEqual(tiles.find((t) => t.key === 'iplayer').launchIds, ['3201601007670']);
-  for (const t of tiles.filter((x) => x.key !== 'iplayer')) { assert.deepEqual(t.launchIds, [], t.key); }
+  for (const t of r.visible.concat(r.hidden)) { assert.deepEqual(t.launchIds, [], t.key); }
 });
 
 test('only iplayer carries prelaunch: tuner; resolved tiles copy it (default null)', () => {

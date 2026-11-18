@@ -124,8 +124,10 @@
       if (sel.row === 0) {
         var ids = (t.launchIds || []).concat([t.appId]);
         if (t.prelaunch === 'tuner') {
-          // Launch even if the tuner switch fails; the app may still open.
-          p = platform.selectTuner().then(null, function () {}).then(function () { return platform.launchFirst(ids); });
+          // Launch even if the tuner switch fails; the app may still open. Hybrid (HbbTV) apps
+          // draw over live TV with noautoraise, so Home must hide itself or it covers them.
+          p = platform.selectTuner().then(null, function () {}).then(function () { return platform.launchFirst(ids); })
+            .then(function () { platform.hideSelf(); });
         } else { p = platform.launchFirst(ids); }
       }
       else if (t.hdmi) { p = platform.openInput(t.hdmi); }
