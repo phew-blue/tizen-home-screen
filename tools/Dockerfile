@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN userdel -r ubuntu 2>/dev/null || true; useradd -m -u 1000 tizen
 USER root
 COPY tools/tv-install.sh /usr/local/bin/tv-install
-RUN chmod 755 /usr/local/bin/tv-install
+COPY tools/tv-power-watch.mjs /usr/local/bin/tv-power-watch.mjs
+RUN chmod 755 /usr/local/bin/tv-install /usr/local/bin/tv-power-watch.mjs
 USER tizen
 WORKDIR /home/tizen
 RUN curl -fsSLo cli.bin https://download.tizen.org/sdk/Installer/tizen-studio_${TIZEN_STUDIO}/web-cli_Tizen_Studio_${TIZEN_STUDIO}_ubuntu-64.bin \

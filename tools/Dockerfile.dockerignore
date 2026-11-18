@@ -1,3 +1,4 @@
 *
 !tools/tv-install.sh
 !tools/secret-tool-stub.sh
+!tools/tv-power-watch.mjs
