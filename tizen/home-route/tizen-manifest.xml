@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" package="blue.phew.homeroute" version="1.0.0" api-version="5.0" type="tpk">
+  <profile name="tv"/>
+  <label>Phew Home route</label>
+  <description>Routes the remote's Home key to PhewTvHome.Home.</description>
+  <ui-application appid="blue.phew.homeroute" exec="PhewHomeRoute.dll" type="dotnet" multiple="false" nodisplay="true" taskmanage="false" launch_mode="single">
+    <label>Phew Home route</label>
+    <icon>icon.png</icon>
+  </ui-application>
+  <privileges>
+    <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
+  </privileges>
+  <app-context appid="blue.phew.homeroute">
+    <app-context-rule>
+      <source selector="key" override="true">XF86Home</source>
+      <target selector="app" request="launch" args="entry_point:phew_home">PhewTvHome.Home</target>
+    </app-context-rule>
+  </app-context>
+</manifest>

@@ -2,3 +2,5 @@ node_modules/
 build/
 test-results/
 playwright-report/
+tizen/home-route/bin/
+tizen/home-route/obj/
