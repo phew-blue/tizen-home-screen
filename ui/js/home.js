@@ -269,7 +269,8 @@
     });
     // Inputs row is usable immediately; the apps row draws from the cached list, then refreshes.
     var cached = Prefs.loadApps(storage);
-    if (cached) { applyApps(cached); diag.markInteractive(); } else { render(); }
+    render();
+    if (cached) { applyApps(cached); diag.markInteractive(); }
     refreshInputStatus();
     loadApps().then(function () { diag.markInteractive(); });
   }
