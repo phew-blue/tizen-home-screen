@@ -25,12 +25,12 @@ test('OK launches the focused app', async ({ page }) => {
   expect(log[0][0]).toBe('launch');
 });
 
-test('iPlayer selects the TV tuner, launches, then hides Home so HbbTV shows', async ({ page }) => {
+test('iPlayer hands its HbbTV link to the HbbTV engine, then hides Home', async ({ page }) => {
   await page.keyboard.press('ArrowRight');
   expect(await focusedKey(page)).toBe('iplayer');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOCK_LOG))
-    .toEqual([['source', 'TV', 1], ['launch', 'DqEoaplKlw.bbchybrid'], ['hide']]);
+    .toEqual([['source', 'TV', 1], ['appcontrol', 'org.tizen.hbbtv', 'DqEoaplKlw.bbchybrid'], ['hide']]);
 });
 
 test('Switch tile selects HDMI 2 then opens the viewer', async ({ page }) => {

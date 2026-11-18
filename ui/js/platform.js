@@ -4,6 +4,8 @@
 })(this, function () {
   'use strict';
   var VIEWER_APP = 'org.tizen.tv-viewer';
+  var HBBTV_APP = 'org.tizen.hbbtv';
+  var HBBTV_LINK = 'http://samsung.com/tv/metadata/hbbtv.link';
   function create(tizen, opts) {
     var timeoutMs = (opts && opts.timeoutMs) || 8000;
     function call(what, fn) {
@@ -56,6 +58,26 @@
         return call('Select tuner', function (ok, err) { tizen.tvwindow.setSource(src, ok, err, 'MAIN'); });
       });
     }
+    // Hybrid apps (BBC iPlayer) are stubs whose metadata holds an HbbTV link; a plain launch is
+    // silently ignored, so hand the link to the HbbTV engine the way Samsung's menu does
+    // (recipe from helalaou/AeroTizen). Resolves false when the app has no link.
+    function launchHbbtv(appId) {
+      var link = '';
+      try {
+        (tizen.application.getAppMetaData(appId) || []).forEach(function (m) {
+          if (m.key === HBBTV_LINK && m.value) { link = m.value; }
+        });
+      } catch (e) { /* metadata read denied */ }
+      if (!link) { return Promise.resolve(false); }
+      return call('Launch', function (ok, err) {
+        var ac = new tizen.ApplicationControl('http://tizen.org/appcontrol/operation/default', null, null, null, [
+          new tizen.ApplicationControlData('tizenid', [appId]),
+          new tizen.ApplicationControlData('hbbtv', [link]),
+          new tizen.ApplicationControlData('deeplink', ['true'])
+        ]);
+        tizen.application.launchAppControl(ac, HBBTV_APP, ok, err);
+      }).then(function () { return true; });
+    }
     function hideSelf() {
       tizen.application.getCurrentApplication().hide();
     }
@@ -77,7 +99,7 @@
         try { tizen.tvinputdevice.registerKey(names[i]); } catch (e) { /* key unsupported on this model */ }
       }
     }
-    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, selectTuner: selectTuner, hideSelf: hideSelf, inputStatus: inputStatus, registerKeys: registerKeys };
+    return { listApps: listApps, launch: launch, launchFirst: launchFirst, openInput: openInput, selectTuner: selectTuner, launchHbbtv: launchHbbtv, hideSelf: hideSelf, inputStatus: inputStatus, registerKeys: registerKeys };
   }
   return { create: create, VIEWER_APP: VIEWER_APP };
 });

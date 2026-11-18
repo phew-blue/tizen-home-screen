@@ -61,6 +61,29 @@ test('hideSelf hides the current application', () => {
   P.create(t).hideSelf();
   assert.deepEqual(calls, ['hide']);
 });
+function hbbtvTizen(meta, calls) {
+  const t = fakeTizen();
+  t.ApplicationControl = function (op, uri, mime, cat, data) { Object.assign(this, { op, uri, data }); };
+  t.ApplicationControlData = function (key, value) { this.key = key; this.value = value; };
+  t.application.getAppMetaData = () => meta;
+  t.application.launchAppControl = (ac, id, ok) => {
+    calls.push([id, ac.op, ac.data.map((d) => [d.key, d.value[0]])]);
+    ok();
+  };
+  return t;
+}
+test('launchHbbtv hands the app\'s hbbtv.link to org.tizen.hbbtv as a deep link', async () => {
+  const calls = [];
+  const meta = [{ key: 'other', value: 'x' }, { key: 'http://samsung.com/tv/metadata/hbbtv.link', value: 'https://b/iplayer' }];
+  assert.equal(await P.create(hbbtvTizen(meta, calls)).launchHbbtv('bbc.app'), true);
+  assert.deepEqual(calls, [['org.tizen.hbbtv', 'http://tizen.org/appcontrol/operation/default',
+    [['tizenid', 'bbc.app'], ['hbbtv', 'https://b/iplayer'], ['deeplink', 'true']]]]);
+});
+test('launchHbbtv resolves false without launching when the app has no hbbtv.link', async () => {
+  const calls = [];
+  assert.equal(await P.create(hbbtvTizen([{ key: 'other', value: 'x' }], calls)).launchHbbtv('a'), false);
+  assert.deepEqual(calls, []);
+});
 test('openInput rejects for an unknown port', async () => {
   await assert.rejects(P.create(fakeTizen()).openInput(4), /HDMI 4/);
 });
