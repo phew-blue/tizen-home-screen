@@ -6,7 +6,7 @@
   // Tile key -> brand. mark: file in assets/marks (built to img/tiles/<key>.svg); text: fallback wordmark.
   var BRANDS = {
     netflix: { mark: 'netflix', bg: '#141414', fg: '#e50914' },
-    iplayer: { text: 'iPlayer', bg: 'linear-gradient(135deg,#f54997,#8a3dd8)', fg: '#fff' },
+    iplayer: { mark: 'iplayer', bg: 'linear-gradient(135deg,#f54997,#8a3dd8)', fg: '#fff' },
     disney: { mark: 'disneyplus', bg: 'linear-gradient(135deg,#091550,#1f5bd8)', fg: '#fff' },
     appletv: { mark: 'appletv', bg: '#1c1c1e', fg: '#fff' },
     plex: { mark: 'plex', bg: '#1f1f1f', fg: '#e5a00d' },
