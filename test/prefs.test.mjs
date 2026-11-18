@@ -22,6 +22,25 @@ test('round-trips', () => {
 test('storage that throws on read gives defaults', () => {
   assert.deepEqual(P.load({ getItem() { throw new Error('quota'); } }), { order: [], hidden: null });
 });
+test('cached app list round-trips and is separate from prefs', () => {
+  const s = mem();
+  const apps = [{ id: 'a.b', name: 'A', iconPath: '/a.png', show: true }];
+  P.saveApps(s, apps);
+  assert.deepEqual(P.loadApps(s), apps);
+  assert.deepEqual(P.load(s), { order: [], hidden: null });
+});
+test('missing, corrupt or wrong-shaped app cache gives null', () => {
+  const s = mem();
+  assert.equal(P.loadApps(s), null);
+  s.setItem(P.APPS_KEY, '{nope');
+  assert.equal(P.loadApps(s), null);
+  s.setItem(P.APPS_KEY, '[{"id":1}]');
+  assert.equal(P.loadApps(s), null);
+  assert.equal(P.loadApps({ getItem() { throw new Error('quota'); } }), null);
+});
+test('saveApps swallows storage errors', () => {
+  P.saveApps({ setItem() { throw new Error('quota'); } }, []);
+});
 test('save rejects invalid prefs', () => {
   assert.throws(() => P.save(mem(), { order: 'x', hidden: null }));
 });

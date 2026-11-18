@@ -132,3 +132,10 @@ test('diagnostics show a memory line', async ({ page }) => {
   await page.keyboard.press('r');
   await expect(page.locator('#diag')).toContainText(/memory:/i);
 });
+
+test('app tiles render from the cached list before the TV answers', async ({ page }) => {
+  // beforeEach loaded once, so the cache holds the app list. Now make the TV never answer.
+  await page.addInitScript(() => { window.__MOCK_APPS_HANG__ = true; });
+  await page.reload();
+  await expect(page.locator('#apps .tile[data-key="netflix"]')).toBeVisible();
+});

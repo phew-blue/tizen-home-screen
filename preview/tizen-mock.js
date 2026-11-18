@@ -8,7 +8,7 @@
   var sources = window.__MOCK_SOURCES__ || { connected: [], disconnected: [] };
   window.tizen = {
     application: {
-      getAppsInfo: function (ok) { setTimeout(function () { ok(apps); }, 0); },
+      getAppsInfo: function (ok) { if (window.__MOCK_APPS_HANG__) { return; } setTimeout(function () { ok(apps); }, 0); },
       launch: function (id, ok) { window.__MOCK_LOG.push(['launch', id]); setTimeout(ok, 0); },
       getCurrentApplication: function () { return { hide: function () { window.__MOCK_LOG.push(['hide']); } }; },
       getAppMetaData: function (id) {

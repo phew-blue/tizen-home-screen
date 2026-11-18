@@ -40,5 +40,26 @@
     if (i >= 0) { hidden.splice(i, 1); } else { hidden.push(key); }
     return { order: p.order.slice(), hidden: hidden };
   }
-  return { KEY: KEY, defaults: defaults, load: load, save: save, move: move, toggleHidden: toggleHidden };
+  // Last installed-app list, so tiles draw at once instead of waiting seconds for getAppsInfo.
+  var APPS_KEY = 'ths.apps.v1';
+  function validApps(a) {
+    if (Object.prototype.toString.call(a) !== '[object Array]') { return false; }
+    for (var i = 0; i < a.length; i++) {
+      if (!a[i] || typeof a[i].id !== 'string' || typeof a[i].name !== 'string') { return false; }
+    }
+    return true;
+  }
+  function loadApps(storage) {
+    try {
+      var a = JSON.parse(storage.getItem(APPS_KEY));
+      return validApps(a) ? a : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function saveApps(storage, apps) {
+    try { storage.setItem(APPS_KEY, JSON.stringify(apps)); } catch (e) { /* cache is best-effort */ }
+  }
+  return { KEY: KEY, APPS_KEY: APPS_KEY, defaults: defaults, load: load, save: save, move: move, toggleHidden: toggleHidden,
+    loadApps: loadApps, saveApps: saveApps };
 });

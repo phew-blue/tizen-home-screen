@@ -235,19 +235,25 @@
     // (Re)load the app list; preserves focus by tile key. Before the first user move, focus resets to the first tile.
     function loadApps() {
       return platform.listApps().then(function (apps) {
-        var sel = focusedTile();
-        var key = state.moved && sel && sel.row === 0 && sel.tile ? sel.tile.key : null;
-        state.installed = apps;
-        state.resolved = Catalog.resolve(apps, Catalog.APPS, state.prefs);
-        if (!state.moved) { state.focus = null; }
-        if (key) {
-          var tiles = appTiles();
-          for (var i = 0; i < tiles.length; i++) { if (tiles[i].key === key) { state.focus.cols[0] = i; } }
-        }
-        render();
+        // Unchanged since the cached render: leave the screen (and focus) alone.
+        if (JSON.stringify(apps) === JSON.stringify(state.installed)) { return; }
+        Prefs.saveApps(storage, apps);
+        applyApps(apps);
       }, function () {
         toast("Couldn't read apps");
       });
+    }
+    function applyApps(apps) {
+      var sel = focusedTile();
+      var key = state.moved && sel && sel.row === 0 && sel.tile ? sel.tile.key : null;
+      state.installed = apps;
+      state.resolved = Catalog.resolve(apps, Catalog.APPS, state.prefs);
+      if (!state.moved) { state.focus = null; }
+      if (key) {
+        var tiles = appTiles();
+        for (var i = 0; i < tiles.length; i++) { if (tiles[i].key === key) { state.focus.cols[0] = i; } }
+      }
+      render();
     }
 
     platform.registerKeys(THS.Keys.TIZEN_KEYS);
@@ -261,8 +267,9 @@
       refreshInputStatus();
       loadApps();
     });
-    // Inputs row is usable immediately; the apps row fills in when the list arrives.
-    render();
+    // Inputs row is usable immediately; the apps row draws from the cached list, then refreshes.
+    var cached = Prefs.loadApps(storage);
+    if (cached) { applyApps(cached); diag.markInteractive(); } else { render(); }
     refreshInputStatus();
     loadApps().then(function () { diag.markInteractive(); });
   }
