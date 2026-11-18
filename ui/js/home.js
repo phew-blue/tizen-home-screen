@@ -22,7 +22,7 @@
       hint: doc.getElementById('hint'), toast: doc.getElementById('toast'),
       diag: doc.getElementById('diag'), clock: doc.getElementById('clock'), date: doc.getElementById('date')
     };
-    var state = { resolved: { visible: [], hidden: [], missing: [] }, prefs: Prefs.load(storage), focus: null, editing: false, inputStatus: null, installed: [], moved: false };
+    var state = { resolved: { visible: [], hidden: [], missing: [] }, prefs: Prefs.load(storage), focus: null, editing: false, inputStatus: null, installed: [], moved: false, compact: Prefs.loadCompact(storage) };
     var toastTimer = null;
     var HINT = els.hint.innerHTML;
 
@@ -79,7 +79,7 @@
       renderRow(els.apps, appTiles(), state.editing ? state.resolved.visible.length : undefined);
       renderRow(els.inputs, Catalog.INPUTS);
       state.focus = state.focus ? Focus.clamp(state.focus, lengths()) : Focus.initial(lengths());
-      els.stage.className = state.editing ? 'editing' : '';
+      els.stage.className = (state.editing ? 'editing' : '') + (state.compact ? ' compact' : '');
       updateHint();
       applyFocus();
     }
@@ -198,6 +198,10 @@
         if (state.editing) { state.editing = false; render(); }
       } else if (a === 'yellow') {
         state.editing = !state.editing;
+        render();
+      } else if (a === 'green') {
+        state.compact = !state.compact;
+        Prefs.saveCompact(storage, state.compact);
         render();
       } else if (a === 'blue') {
         if (state.editing) { toggleHide(); }

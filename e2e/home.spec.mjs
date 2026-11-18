@@ -139,3 +139,16 @@ test('app tiles render from the cached list before the TV answers', async ({ pag
   await page.reload();
   await expect(page.locator('#apps .tile[data-key="netflix"]')).toBeVisible();
 });
+
+test('Green toggles compact app tiles and the choice persists', async ({ page }) => {
+  const width = () => page.locator('#apps .tile').first().evaluate((el) => el.offsetWidth);
+  const full = await width();
+  await page.keyboard.press('g');
+  await expect(page.locator('#stage')).toHaveClass(/compact/);
+  expect(await width()).toBeLessThan(full);
+  await page.reload();
+  await expect(page.locator('#stage')).toHaveClass(/compact/);
+  await page.keyboard.press('g');
+  await expect(page.locator('#stage')).not.toHaveClass(/compact/);
+  expect(await width()).toBe(full);
+});

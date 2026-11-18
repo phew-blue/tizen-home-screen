@@ -38,6 +38,16 @@ test('missing, corrupt or wrong-shaped app cache gives null', () => {
   assert.equal(P.loadApps(s), null);
   assert.equal(P.loadApps({ getItem() { throw new Error('quota'); } }), null);
 });
+test('compact defaults to false, round-trips, and survives storage errors', () => {
+  const s = mem();
+  assert.equal(P.loadCompact(s), false);
+  P.saveCompact(s, true);
+  assert.equal(P.loadCompact(s), true);
+  P.saveCompact(s, false);
+  assert.equal(P.loadCompact(s), false);
+  assert.equal(P.loadCompact({ getItem() { throw new Error('x'); } }), false);
+  P.saveCompact({ setItem() { throw new Error('quota'); } }, true);
+});
 test('saveApps swallows storage errors', () => {
   P.saveApps({ setItem() { throw new Error('quota'); } }, []);
 });

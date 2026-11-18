@@ -24,6 +24,10 @@ h2{font-size:26px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;o
 .editing .tile.focused .card{box-shadow:0 0 0 5px #ffd400;}
 .editing .tile.focused .label{color:#ffd400;}
 .tile.is-hidden{opacity:.35;}
+.compact #apps .tile{width:200px;margin-right:24px;}
+.compact #apps .card{height:113px;border-radius:14px;}
+.compact #apps .wordmark{font-size:34px;}
+.compact #apps .label{margin-top:10px;font-size:22px;line-height:28px;height:28px;}
 #inputs .tile{width:536px;}
 #inputs .card{height:190px;justify-content:flex-start;text-align:left;padding-left:40px;}
 #inputs .card img.mark{width:80px;height:80px;max-width:none;max-height:none;margin-right:36px;flex:0 0 auto;}
@@ -41,4 +45,5 @@ h2{font-size:26px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;o
 #hint .key{display:inline-block;box-sizing:border-box;min-width:44px;height:44px;padding:0 14px;border:2px solid rgba(255,255,255,.7);border-radius:8px;text-align:center;font-weight:600;font-size:22px;line-height:40px;margin-right:12px;}
 #hint .key.yellow{color:#ffd400;border-color:#ffd400;}
 #hint .key.red{color:#ff5a5a;border-color:#ff5a5a;}
+#hint .key.green{color:#2fe06a;border-color:#2fe06a;}
 #hint .act{opacity:.65;margin-right:36px;}

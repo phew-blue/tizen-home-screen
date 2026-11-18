@@ -60,6 +60,14 @@
   function saveApps(storage, apps) {
     try { storage.setItem(APPS_KEY, JSON.stringify(apps)); } catch (e) { /* cache is best-effort */ }
   }
+  // Compact app tiles (Green).
+  var COMPACT_KEY = 'ths.compact.v1';
+  function loadCompact(storage) {
+    try { return storage.getItem(COMPACT_KEY) === '1'; } catch (e) { return false; }
+  }
+  function saveCompact(storage, on) {
+    try { storage.setItem(COMPACT_KEY, on ? '1' : '0'); } catch (e) { /* best-effort */ }
+  }
   return { KEY: KEY, APPS_KEY: APPS_KEY, defaults: defaults, load: load, save: save, move: move, toggleHidden: toggleHidden,
-    loadApps: loadApps, saveApps: saveApps };
+    loadApps: loadApps, saveApps: saveApps, loadCompact: loadCompact, saveCompact: saveCompact };
 });
